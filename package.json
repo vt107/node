@@ -1,0 +1,28 @@
+{
+  "name": "node",
+  "version": "1.0.0",
+  "description": "Tho's test app",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vt107/node.git"
+  },
+  "author": "Van Tho",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vt107/node/issues"
+  },
+  "homepage": "https://github.com/vt107/node#readme",
+  "dependencies": {
+    "bcrypt": "^2.0.1",
+    "body-parser": "^1.18.3",
+    "ejs": "^2.6.1",
+    "express": "^4.16.3",
+    "mysql": "github:mysqljs/mysql",
+    "npm": "^6.1.0",
+    "request": "^2.87.0"
+  }
+}
