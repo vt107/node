@@ -17,11 +17,14 @@
   },
   "homepage": "https://github.com/vt107/node#readme",
   "dependencies": {
+    "async": "^2.6.1",
     "bcrypt": "^2.0.1",
     "body-parser": "^1.18.3",
     "ejs": "^2.6.1",
     "express": "^4.16.3",
     "mysql": "github:mysqljs/mysql",
+    "nanoid": "^1.0.3",
+    "nodemailer": "^4.6.6",
     "npm": "^6.1.0",
     "request": "^2.87.0"
   }

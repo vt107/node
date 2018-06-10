@@ -1,13 +1,27 @@
 const express =  require('express');
 const bodyParser = require('body-parser');
-const request = require('request');
+// const request = require('request');
 const mysql = require('mysql');
 const bcrypt = require('bcrypt');
+const nodemailer = require('nodemailer');
+const async = require('async');
+const nanoid = require("nanoid");
 
+const appConfig = {
+  tokenTime: 30, // minute
+  mail_user: 'tktthack@gmail.com',
+  mail_pass: '0686601430',
+};
+
+const gmail = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: appConfig.mail_user,
+        pass: appConfig.mail_pass
+    }
+});
 
 const app = express();
-
-const apiKey = '76e9a0962ffd50b37af23161108be89c';
 
 app.use(express.static('public'));
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -28,15 +42,10 @@ mySql.connect(function(err) {
 
 
 app.get('/', function(req, res) {
-  mySql.query("SELECT * FROM test WHERE name='name1'", function(error, result) {
-    if (error) throw error;
-    console.log(result);
-  });
-  res.render('index', {weather: null, error: null});
+  res.render('index', {});
 });
 
 app.post('/', function (req, res) {
-  let city = req.body.city;
 
 });
 
@@ -51,21 +60,54 @@ app.post('/login', function(req, res) {
 });
 
 app.post('/register', function(req, res) {
-  let username = req.body.username;
+  let email = req.body.email;
   let password = req.body.password;
   let name = req.body.name;
-  if (!(name && username && password)) {
+  // an field is missing
+  if (!(name && email && password)) {
     res.render('register', {error: 'Missing field!'});
   } else {
+      // password length not satisfied
     if (password.length < 8 || password.length > 20) {
       res.render('register', {error: 'length!'});
+
+    } else if (!/^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/.test(email)) { // Wrong format
+        res.render('email', {error: 'format'});
     } else if (!/^[a-z0-9]+$/.test(password)) {
       res.render('register', {error: 'format'});
     } else {
-      bcrypt.hash(password, 10, function(err, hash) {
-        if (err) throw err;
-        mySql.query("INSERT INTO users (username, name, password) VALUES (?, ?, ?)", [user])
-      });
+        // Check if exist before
+        mySql.query("SELECT * FROM users WHERE email=?"[email], function (error, result) {
+            if (error) throw error;
+            if (result.length > 0) {
+
+            } else {
+                bcrypt.hash(password, 10, function(err, hash) {
+                    if (err) throw err;
+                    // Generate an token
+                    let token = nanoid();
+                    let tokenExpired = new Date();
+                    tokenExpired.setMinutes(tokenExpired.getMinutes() + appConfig.tokenTime);
+                    mySql.query("INSERT INTO users (email, name, password, confirmed, token, token_expired_at) VALUES (?, ?, ?, ?, ?, ?)", [email, name, hash, 0, token, tokenExpired], function(error, result) {
+                        if (error) throw error;
+                        // Send an email
+                        let mailOptions = {
+                            from: 'Admin chat',
+                            to: email,
+                            subject: 'Hoan tat dang ky thanh vien',
+                            text: 'That was easy!'
+                        };
+                        // res.render('login', {message: 'created'})
+                        gmail.sendMail(mailOptions, function(error, info){
+                            if (error) console.log(error);
+                        });
+
+                        res.render('register', {message: 'Email da duoc gui, hay xac nhan', email: email});
+                    })
+                });
+            }
+        });
+
     }
 
 
@@ -73,27 +115,6 @@ app.post('/register', function(req, res) {
 
 });
 
-//bcrypt.hash('myPassword', 10, function(err, hash) {
-//   // Store hash in database
-// });
-
 app.listen(3000, function () {
-  console.log('Example app listening on port 3000!');
+    console.log('Example app listening on port 3000!');
 });
-
-
-// Code request example
-// let url = `http://api.openweathermap.org/data/2.5/weather?q=${city}&units=imperial&appid=${apiKey}`
-// request(url, function (err, response, body) {
-//   if (err) {
-//     res.render('index', {weather: null, error: 'Error, please try again!'})
-//   } else {
-//     let weather = JSON.parse(body);
-//     if (weather.main === undefined) {
-//       res.render('index', {weather: null, error: 'Error, please try again'})
-//     } else {
-//       let weatherText = `it's ${weather.main.temp} degrees in ${weather.name}!`;
-//       res.render('index', {weather: weatherText, error: null})
-//     }
-//   }
-// });
