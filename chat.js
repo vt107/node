@@ -4,7 +4,6 @@ const bodyParser = require('body-parser');
 const mysql = require('mysql');
 const bcrypt = require('bcrypt');
 const nodemailer = require('nodemailer');
-const async = require('async');
 const nanoid = require("nanoid");
 const session = require('express-session')
 
@@ -18,14 +17,17 @@ const appConfig = {
 };
 
 const gmail = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: appConfig.mail_user,
-    pass: appConfig.mail_pass
-  }
+    service: 'gmail',
+    auth: {
+        user: appConfig.mail_user,
+        pass: appConfig.mail_pass
+    }
 });
 
 const app = express();
+var server = require('http').Server(app);
+var io = require('socket.io')(server);
+
 
 app.use(express.static('public'));
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -54,7 +56,8 @@ mySql.connect(function(err) {
 
 
 app.get('/', function(req, res) {
-
+  console.log(req.session.user);
+  res.render('index', {});
 });
 
 app.get('/login', function(req, res) {
@@ -127,52 +130,47 @@ app.post('/register', function(req, res) {
   } else if (!validator.lengthValid(name, 5, 200)) {
     res.render('register', {error: 'Chieu dai ten'});
   } else {
-    // password length not satisfied
+      // password length not satisfied
     if (password.length < 8 || password.length > 20) {
       res.render('register', {error: 'do dai'});
     } else if (!validator.isEmail(email)) { // Wrong format
-      res.render('register', {error: 'dinh dang email'});
+        res.render('register', {error: 'dinh dang email'});
     } else if (!validator.alphabetOnly(password)) {
       res.render('register', {error: 'dinh dang password'});
     } else {
-      // Check if exist before
-      mySql.query("SELECT * FROM users WHERE email=?", [email], function (error, result) {
-        if (error) throw error;
-        if (result.length > 0 && parseInt(result[0]['confirmed']) === 1) {
-          res.render('register', {error: 'email da dang ky'});
-        } else {
-          if (result.length > 0) {
-            mySql.query("DELETE FROM users WHERE email = ?", [email]);
-          }
-          bcrypt.genSalt(10, function(err, salt) {
-            bcrypt.hash(password, salt, function(err, hash) {
-              if (err) throw err;
-              // Generate an token
-              let token = nanoid();
-              let tokenExpired = new Date();
-              tokenExpired.setMinutes(tokenExpired.getMinutes() + appConfig.tokenTime);
-              mySql.query("INSERT INTO users (email, name, password, confirmed, token, token_expired_at) VALUES (?, ?, ?, ?, ?, ?)", [email, name, hash, 0, token, tokenExpired], function(error, result) {
-                if (error) throw error;
-                // Send an email
-                let mailBody = `De hoan tat dang ky:
+        // Check if exist before
+        mySql.query("SELECT * FROM users WHERE email=?", [email], function (error, result) {
+            if (error) throw error;
+            if (result.length > 0 && parseInt(result[0]['confirmed']) === 1) {
+              res.render('register', {error: 'email da dang ky'});
+            } else {
+              if (result.length > 0) {
+                mySql.query("DELETE FROM users WHERE email = ?", [email]);
+              }
+              bcrypt.genSalt(10, function(err, salt) {
+                bcrypt.hash(password, salt, function(err, hash) {
+                  if (err) throw err;
+                  // Generate an token
+                  let token = nanoid();
+                  let tokenExpired = new Date();
+                  tokenExpired.setMinutes(tokenExpired.getMinutes() + appConfig.tokenTime);
+                  mySql.query("INSERT INTO users (email, name, password, confirmed, token, token_expired_at) VALUES (?, ?, ?, ?, ?, ?)", [email, name, hash, 0, token, tokenExpired], function(error, result) {
+                    if (error) throw error;
+                    // Send an email
+                    let mailBody = `De hoan tat dang ky:
                         link: ${appConfig.url}/confirm-email?email=${email}&token=${token}"`;
-                sendMail('Admin', email, 'Hoan tat dang ky thanh', mailBody, (error, result) => {
-                  if (error) throw error;
-                  res.render('register', {message: `Email da duoc gui toi ${email}, hay xac nhan trong 30p`});
-                });
+                    sendMail('Admin', email, 'Hoan tat dang ky thanh', mailBody, (error, result) => {
+                      if (error) throw error;
+                      res.render('register', {message: `Email da duoc gui toi ${email}, hay xac nhan trong 30p`});
+                    });
 
-              })
-            });
-          });
-        }
-      });
+                  })
+                });
+              });
+            }
+        });
     }
   }
-});
-
-app.get('/logout', (req, res) => {
-  req.session.destroy();
-  res.render('login');
 });
 
 function sendMail(from, toEmail, subject, body, callback) {
@@ -186,6 +184,17 @@ function sendMail(from, toEmail, subject, body, callback) {
   gmail.sendMail(mailOptions, callback);
 }
 
-app.listen(3000, function () {
+
+server.listen(3000, function() {
   console.log('Example app listening on port 3000!');
+});
+// app.listen(3000, function () {
+//   console.log('Example app listening on port 3000!');
+// });
+
+io.on('connection', function (socket) {
+  socket.emit('news', { hello: 'world' });
+  socket.on('my other event', function (data) {
+    console.log(data);
+  });
 });

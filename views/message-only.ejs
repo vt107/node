@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Test</title>
+    <link rel="stylesheet" type="text/css" href="/css/app.css">
+    <link rel="stylesheet" type="text/css" href="/vendor/bootstrap/css/bootstrap.min.css">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300' rel='stylesheet' type='text/css'>
+  </head>
+  <body>
+    <div class="container">
+      <fieldset>
+        <section id="message">
+          <div class="row">
+            <div class="col-md-6 offset-md-2 mt-5">
+              <% if (typeof message !== "undefined" && message) {%>
+              <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <%= message %>
+              </div>
+              <% } %>
+            </div>
+          </div>
+        </section>
+      </fieldset>
+    </div>
+  </body>
+</html>

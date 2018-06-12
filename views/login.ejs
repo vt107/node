@@ -1,37 +1,62 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <title>Test</title>
-    <link rel="stylesheet" type="text/css" href="/css/style.css">
-    <link rel="stylesheet" type="text/css" href="/vendor/bootstrap/css/bootstrap.min.css">
-    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300' rel='stylesheet' type='text/css'>
-  </head>
-  <body>
-    <div class="container">
-      <fieldset>
-        <section id="login">
-          <form action="/login" method="post">
-            <div class="form-group">
-              <label for="username">Username</label>
-              <input id="username" name="username" class="form-control" placeholder="Username">
-              <small class="form-text text-muted">abc chs</small>
-            </div>
-            <div class="form-group">
-              <label for="password">Password</label>
-              <input id="password" name="password" class="form-control" placeholder="Password">
-              <small class="form-text text-muted">fasf af dfa </small>
-            </div>
-            <div class="form-check">
-              <input type="checkbox" name="remember" title="Remember me" class="form-check-input">
-              <label class="form-check-label">Remember me</label>
-            </div>
-            <div class="form-group">
-              <button type="submit" class="btn btn-success btn-block">Submit</button>
-            </div>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <title>Login | E-Shopper</title>
+  <link href="css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/font-awesome.min.css" rel="stylesheet">
+  <link href="css/prettyPhoto.css" rel="stylesheet">
+  <link href="css/price-range.css" rel="stylesheet">
+  <link href="css/animate.css" rel="stylesheet">
+  <link href="css/main.css" rel="stylesheet">
+  <link href="css/responsive.css" rel="stylesheet">
+  <!--[if lt IE 9]>
+  <script src="js/html5shiv.js"></script>
+  <![endif]-->
+</head><!--/head-->
+
+<body>
+<%- include('component/_header'); %>
+
+<section id="login"><!--form-->
+  <div class="container">
+    <div class="row">
+      <div class="col-sm-6 col-sm-offset-3">
+        <% if (typeof error !== "undefined" && error) {%>
+        <div class="alert alert-danger alert-dismissible fade in" role="alert">
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <strong><%= error %></strong>
+        </div>
+        <% } %>
+        <div class="login-form"><!--login form-->
+          <h2>Login to your account</h2>
+          <form action="/login" method="post" id="login_form">
+            <input id="email" name="email" class="form-control" placeholder="Email Address">
+            <input id="password" name="password" type="password" class="form-control" placeholder="******">
+            <span>
+								<input type="checkbox" class="checkbox">
+								Keep me signed in
+							</span>
+            <button type="submit" class="btn btn-default">Login</button>
           </form>
-        </section>
-      </fieldset>
+        </div><!--/login form-->
+      </div>
     </div>
-  </body>
+  </div>
+</section><!--/form-->
+
+<%- include('component/_footer'); %>
+
+<script src="js/jquery.js"></script>
+<script src="js/price-range.js"></script>
+<script src="js/jquery.scrollUp.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/jquery.prettyPhoto.js"></script>
+<script src="js/main.js"></script>
+</body>
 </html>
