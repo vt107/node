@@ -39,6 +39,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .btn:hover,
 .btn:focus{
+  color: #fff;
   outline: none;
   box-shadow: none;
 }
@@ -864,6 +865,7 @@ h2.title {
   font-size: 24px;
   font-weight: 700;
 }
+
 .product-overlay h2{
   color: #fff;
   font-family: 'Roboto', sans-serif;
@@ -871,6 +873,9 @@ h2.title {
   font-weight: 700;
 }
 
+.product-overlay h2 small {
+  color: #fff;
+}
 
 .productinfo p{
   font-family: 'Roboto', sans-serif;
@@ -1150,7 +1155,7 @@ h2.title {
   margin-top: 40px;
 }
 
-
+#details,
 #reviews {
   padding-left: 25px;
   padding-right: 25px;
@@ -1161,8 +1166,6 @@ h2.title {
   overflow: hidden;
   margin-top: 10px;
 }
-
-
 
 .view-product {
   position: relative;
@@ -1286,7 +1289,6 @@ h2.title {
   font-family: 'Roboto', sans-serif;
   font-size: 15px;
   margin-bottom: 10px;
-  margin-left: 20px;
 }
 
 
@@ -1378,6 +1380,40 @@ h2.title {
   font-size: 14px;
 }
 
+.text-area-medium {
+  height: 100px;
+  font-size: 20px;
+}
+
+.rating-label {
+  cursor: pointer;
+}
+
+.fixed-review {
+  border: 2px dashed orange;
+  margin: 5px;
+  cursor: pointer;
+}
+
+#star_cover input {
+  display: none;
+}
+
+.star-checked {
+  color: yellow;
+  -webkit-text-stroke-width: 1px;
+  -webkit-text-stroke-color: orange;
+}
+
+.comment-cover {
+  position: relative;
+}
+
+.comment-cover .comment-character-count {
+  position: absolute;
+  bottom: -5px;
+  right: 10px;
+}
 
 /*************************
 *******404 CSS******
@@ -1387,15 +1423,22 @@ h2.title {
   margin-top: 60px;
 }
 
-.content-404 h1 {
+.logo-404 a {
+  font-size: 45px;
+  color: orange;
+  text-decoration: none !important;
+}
+
+.content-404 h2 {
   color: #363432;
   font-family: 'Roboto', sans-serif;
-  font-size: 41px;
+  font-size: 30px;
   font-weight: 300;
 }
 
 .content-404 img {
   margin:0 auto;
+  max-width: 50%;
 }
 
 .content-404 p {
@@ -1412,109 +1455,9 @@ h2.title {
   background: #FE980F;
   color: #FFFFFF;
   font-family: 'Roboto', sans-serif;
-  font-size: 44px;
+  font-size: 25px;
   font-weight: 300;
   padding: 8px 40px;
-}
-
-
-/*************************
-****login, Register CSS***
-**************************/
-
-#login,
-#register {
-  display: block;
-  margin-bottom: 185px;
-  /*margin-top: 185px;*/
-  overflow: hidden;
-}
-
-.login-form {
-
-}
-
-.signup-form {
-
-}
-
-.login-form h2, .signup-form h2 {
-  color: #696763;
-  font-family: 'Roboto', sans-serif;
-  font-size: 20px;
-  font-weight: 300;
-  margin-bottom: 30px;
-}
-
-
-.login-form form input, .signup-form form input {
-  background: #F0F0E9;
-  border: medium none;
-  color: #696763;
-  display: block;
-  font-family: 'Roboto', sans-serif;
-  font-size: 14px;
-  font-weight: 300;
-  height: 40px;
-  margin-bottom: 10px;
-  outline: medium none;
-  padding-left: 10px;
-  width: 100%;
-}
-
-.login-form form span{
-  line-height: 25px;
-}
-
-.login-form form span input {
-  width: 15px;
-  float: left;
-  height: 15px;
-  margin-right: 5px;
-}
-
-.login-form form button {
-  margin-top: 23px;
-}
-
-.login-form form button, .signup-form form button {
-  background: #FE980F;
-  border: medium none;
-  border-radius: 0;
-  color: #FFFFFF;
-  display: block;
-  font-family: 'Roboto', sans-serif;
-  padding: 6px 25px;
-}
-
-.login-form label{
-
-}
-
-
-.login-form label input {
-  border: medium none;
-  display: inline-block;
-  height: 0;
-  margin-bottom: 0;
-  outline: medium none;
-  padding-left: 0;
-}
-
-form .status-alert {
-  display: none;
-}
-
-form.invalid .status-alert {
-  display: block;
-}
-
-.status-alert,
-.alert {
-  padding: 10px !important;
-  -webkit-border-radius: 0;
-  -moz-border-radius: 0;
-  border-radius: 0;
 }
 
 /*************************

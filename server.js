@@ -6,9 +6,10 @@ const bcrypt = require('bcrypt');
 const nodemailer = require('nodemailer');
 const async = require('async');
 const nanoid = require("nanoid");
-const session = require('express-session')
+const session = require('express-session');
 
 const validator = require('./helper/validator.js');
+// const viewHelper = require('./helper/view_helper');
 
 const appConfig = {
   url: 'http://localhost:3000',
@@ -53,15 +54,49 @@ mySql.connect(function(err) {
 });
 
 
-app.get('/', function(req, res) {
-
+app.get('/', (req, res) => {
+  async.waterfall([
+    (callback) => {
+      mySql.query("SELECT * FROM items ORDER BY created_at DESC LIMIT 6",[], (error, newItem) => {
+        if (error) throw error;
+        callback(null, newItem);
+      });
+    },
+    (newItem, callback) => {
+      mySql.query("SELECT * FROM items ORDER BY sold DESC LIMIT 6",[], (error, hotItem) => {
+        if (error) throw error;
+        callback(null, newItem, hotItem);
+      });
+    }
+  ], (error, newItem, hotItem) => {
+    if (error) throw error;
+    res.render('index', {newItem: newItem, hotItem: hotItem});
+  });
 });
 
-app.get('/login', function(req, res) {
+app.get('/san-pham/:itemId', (req, res) => {
+  let itemId = req.params['itemId'];
+  mySql.query("SELECT * FROM items WHERE id = ?", [itemId], (error, item) => {
+    if (error) throw error;
+    if (item.length === 0) {
+      res.render('error/404', { url: req.url });
+    } else {
+      mySql.query("SELECT * FROM items ORDER BY RAND() LIMIT 3", [], (error, randomItem) => {
+        if (error) throw error;
+        mySql.query("SELECT * FROM ratings WHERE item_id = ?", [itemId], (error, ratings) => {
+          if (error) throw error;
+          res.render('item', {item: item[0], randomItem: randomItem, ratings: ratings});
+        })
+      })
+    }
+  })
+});
+
+app.get('/login', (req, res) => {
   res.render('login');
 });
 
-app.post('/login', function(req, res) {
+app.post('/login', (req, res) => {
   let email = req.body.email;
   let password = req.body.password;
 
@@ -92,11 +127,11 @@ app.post('/login', function(req, res) {
   }
 });
 
-app.get('/register', function(req, res) {
+app.get('/register', (req, res) => {
   res.render('register');
 });
 
-app.get('/confirm-email', function(req, res) {
+app.get('/confirm-email', (req, res) => {
   let email = req.query.email;
   let token = req.query.token;
   if (!email || !token || email.length > 100 || token.length > 100) {
@@ -116,7 +151,7 @@ app.get('/confirm-email', function(req, res) {
   }
 });
 
-app.post('/register', function(req, res) {
+app.post('/register', (req, res) => {
   let email = req.body.email;
   let password = req.body.password;
   let name = req.body.name;
@@ -186,6 +221,33 @@ function sendMail(from, toEmail, subject, body, callback) {
   gmail.sendMail(mailOptions, callback);
 }
 
-app.listen(3000, function () {
+/*
+ * Helper
+ */
+// app.locals = viewHelper;
+
+app.locals.formatPrice = price => {
+
+  price = price.toString();
+  let rgx = /(\d+)(\d{3})/;
+  while (rgx.test(price)) {
+    price = price.replace(rgx, '$1' + '.' + '$2');
+  }
+  return '<small>đ</small>' + price;
+};
+
+app.locals.formatDay = input => {
+  let day = new Date(input);
+  return `${day.getDate()}/${day.getMonth()}/${day.getFullYear()}`;
+};
+
+app.locals.logged_in = () => {
+  return true;
+};
+/*
+ * End Helper
+ */
+
+app.listen(3000, () => {
   console.log('Example app listening on port 3000!');
 });
