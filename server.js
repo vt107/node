@@ -142,7 +142,7 @@ app.get('/confirm-email', (req, res) => {
       if (!(result.length > 0 && new Date() < Date.parse(result[0]['token_expired_at']))) {
         res.render('message-only', {message: 'Xac minh that bai2'});
       } else {
-        mySql.query("UPDATE users SET confirmed = ?", [1], (error, result) => {
+        mySql.query("UPDATE users SET confirmed = ?, token=?, token_expired_at=?", [1, '', ''], (error, result) => {
           if (error) throw error;
           res.render('message-only', {message: 'Da xac minh'});
         })
@@ -210,6 +210,44 @@ app.get('/logout', (req, res) => {
   res.render('login');
 });
 
+/*
+Admin function
+ */
+showItems = (req, res) => {
+  mySql.query("SELECT `items`.*, `categories`.`name` as category_name FROM `items` INNER JOIN `categories` ON `items`.`category_id` = `categories`.`id` WHERE 1", [], (err, items) => {
+    if (err) throw err;
+    mySql.query("SELECT * FROM categories WHERE parent_id != 0", [], (err, categories) => {
+      if (err) throw err;
+      res.render('admin/items', {items: items, categories: categories});
+    })
+  });
+};
+
+createItem = (req, res) => {
+
+};
+
+checkAdmin = (req, res, next) => {
+  if (req.session.user.level === 1) {
+    next();
+  } else {
+    res.redirect('/');
+  }
+};
+/*
+End Admin function
+ */
+
+/*
+* Admin routes
+*/
+
+app.get('/admin/san-pham', showItems);
+app.post('/admin/sanpham', createItem);
+
+/*
+* End Admin routes
+*/
 function sendMail(from, toEmail, subject, body, callback) {
   let mailOptions = {
     from: from,
