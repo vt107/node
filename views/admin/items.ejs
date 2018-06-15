@@ -10,10 +10,10 @@
   <link rel="stylesheet" href="/admin/vendor/bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="/admin/vendor/font-awesome/css/font-awesome.min.css">
   <link rel="stylesheet" href="/admin/vendor/linearicons/style.css">
+  <link rel="stylesheet" href="/admin/vendor/datatables/css/dataTables.bootstrap.min.css">
+  <link rel="stylesheet" href="/admin/vendor/bootstrap-select/bootstrap-select.min.css">
   <!-- MAIN CSS -->
   <link rel="stylesheet" href="/admin/css/main.css">
-  <!-- Data table -->
-  <link rel="stylesheet" href="/admin/vendor/datatables/css/dataTables.bootstrap.min.css">
   <!-- GOOGLE FONTS -->
   <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700" rel="stylesheet">
   <!-- ICONS -->
@@ -36,12 +36,18 @@
     <div class="main-content">
       <div class="container-fluid">
         <h3 class="page-title">Tables</h3>
+        <% if (typeof flashStatus !== "undefined" && typeof flashMessage !== "undefined") { %>
+        <div class="alert alert-<%= flashStatus %> alert-dismissible" role="alert">
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
+          <i class="fa fa-check-circle"></i> <%= flashMessage %>
+        </div>
+        <% } %>
         <div class="row">
           <div class="col-md-12">
             <!-- TABLE ITEMS -->
             <div class="panel">
               <div class="panel-heading">
-                <h3 class="panel-title">Hover Row</h3>
+                <h3 class="panel-title">Quản lý sản phẩm</h3>
               </div>
               <div class="panel-body">
                 <table class="table table-hover" id="table_items">
@@ -53,6 +59,7 @@
                     <th>Giá</th>
                     <th>Đã bán/Kho</th>
                     <th>Ngày tạo</th>
+                    <th>Hành động</th>
                   </tr>
                   </thead>
                   <tbody>
@@ -60,19 +67,87 @@
                   <% items.forEach(item => { %>
                   <tr>
                     <td><%= item['name'] %></td>
-                    <td><img src="/<%= item['image'] %>" ></td>
+                    <td><img class="item-images" src="/<%= item['image'] %>" ></td>
                     <td><%= item['category_name'] %></td>
-                    <td><%= formatPrice(item['price']) %></td>
-                    <td><%= item['sold'] %>/<% item['available'] %></td>
-                    <td><%= item['created_at'] %></td>
+                    <td class="text-price"><%- formatPrice(item['price']) %></td>
+                    <td><%= item['sold'] %>/<%= item['available'] %></td>
+                    <td><%= formatDay(item['created_at']) %></td>
+                    <td class="item-action">
+                      <a href="/admin/san-pham/<%= item['id'] %>" class="btn btn-sm btn-info" data-toggle="tooltip" title="Xem">
+                        <span class="fa fa-info-circle"></span>
+                      </a>
+                      <a href="/admin/san-pham/<%= item['id'] %>/edit" class="btn btn-sm btn-primary" data-toggle="tooltip" title="Sửa">
+                        <span class="fa fa-pencil"></span>
+                      </a>
+                      <button class="btn btn-sm btn-danger" data-toggle="tooltip" title="Xóa" type="button" value="<%= item['id'] %>">
+                        <span class="fa fa-trash"></span>
+                      </button>
+                    </td>
                   </tr>
                   <% }) %>
                   <% } %>
                   </tbody>
                 </table>
+                <button class="btn btn-primary" data-toggle="modal" data-target="#modalCreateItem">Thêm sản phẩm mới</button>
               </div>
             </div>
             <!-- END TABLE ITEMS -->
+          </div>
+          <div class="col-md-12">
+            <!-- MODAL CREATE ITEM -->
+            <% listCategory  = {}
+              categories.forEach((cat) => {
+                listCategory[cat['id']] = cat['name'];
+              })
+            %>
+            <div id="modalCreateItem" class="modal fade" role="dialog">
+              <div class="modal-dialog">
+
+                <!-- Modal content-->
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Thêm sản phẩm</h4>
+                  </div>
+                  <form action="/admin/san-pham" method="post" enctype="multipart/form-data">
+                    <div class="modal-body">
+                      <p class="required-note">Các mục có dấu <span class="required"></span> là bắt buộc</p>
+                      <label>Tên sản phẩm <span class="required"></span></label>
+                      <input class="form-control" name="name" placeholder="text field">
+                      <br>
+                      <label>Hình ảnh <span class="required"></span></label>
+                      <input type="file" name="image" accept="image/*" class="form-control">
+                      <br>
+                      <label>Một số hình ảnh khác</label>
+                      <input type="file" name="image" multiple accept="image/*" class="form-control">
+                      <br>
+                      <label>Giá sản phẩm <span class="required"></span></label>
+                      <input type="number" name="price" placeholder="Đơn vị VND" class="form-control">
+                      <br>
+                      <label>Danh mục sản phẩm <span class="required"></span></label>
+                      <select class="selectpicker form-control " name="category_id" data-live-search="true" data-live-search-style="begins" title="Vui lòng chọn...">
+                        <% for (var key in listCategory) { %>
+                        <option value="<%= key %>"><%= listCategory[key] %></option>
+                        <% } %>
+                      </select>
+                      <br>
+                      <br>
+                      <label>Mô tả sản phẩm <span class="required"></span></label>
+                      <textarea class="form-control" placeholder="" rows="4" name="description" id="description"></textarea>
+                      <br>
+                      <label>Số lượng có sẵn</label>
+                      <input type="number" class="form-control" name="available" placeholder="Số lượng có sẵn để bán" value="1">
+                      <br>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="submit" class="btn btn-success">Thêm sản phẩm</button>
+                      <button type="button" class="btn btn-default" data-dismiss="modal">Đóng</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+            <!-- END MODAL CREATE ITEM -->
           </div>
         </div>
       </div>
@@ -83,7 +158,6 @@
   <div class="clearfix"></div>
   <footer>
     <div class="container-fluid">
-      <p class="copyright">&copy; 2017 <a href="https://www.themeineed.com" target="_blank">Theme I Need</a>. All Rights Reserved.</p>
     </div>
   </footer>
 </div>
@@ -94,12 +168,26 @@
 <script src="/admin/vendor/jquery-slimscroll/jquery.slimscroll.min.js"></script>
 <script src="/admin/vendor/datatables/js/jquery.dataTables.min.js"></script>
 <script src="/admin/vendor/datatables/js/dataTables.bootstrap.min.js"></script>
-<script src="/admin/scripts/klorofil-common.js"></script>
+<script src="/admin/vendor/bootstrap-select/bootstrap-select.min.js"></script>
+
+<script src="/admin/js/klorofil-common.js"></script>
+<script src="/admin/js/ckeditor.js"></script>
 
 <script>
   $(document).ready(function() {
     $('#table_items').DataTable();
-  } );
+
+    $('.item-action button').click(function(e) {
+      let itemId = $(e.target).val();
+      // delete item
+    });
+  });
+
+  ClassicEditor
+    .create( document.querySelector( '#description' ) )
+    .catch( error => {
+      console.error( error );
+    } );
 </script>
 </body>
 
