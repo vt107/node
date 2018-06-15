@@ -73,13 +73,13 @@
                     <td><%= item['sold'] %>/<%= item['available'] %></td>
                     <td><%= formatDay(item['created_at']) %></td>
                     <td class="item-action">
-                      <a href="/admin/san-pham/<%= item['id'] %>" class="btn btn-sm btn-info" data-toggle="tooltip" title="Xem">
+                      <a href="/admin/san-pham/<%= item['id'] %>" class="btn btn-sm btn-info mb-1" data-toggle="tooltip" title="Xem">
                         <span class="fa fa-info-circle"></span>
                       </a>
-                      <a href="/admin/san-pham/<%= item['id'] %>/edit" class="btn btn-sm btn-primary" data-toggle="tooltip" title="Sửa">
+                      <a href="/admin/san-pham/<%= item['id'] %>/edit" class="btn btn-sm btn-primary mb-1" data-toggle="tooltip" title="Sửa">
                         <span class="fa fa-pencil"></span>
                       </a>
-                      <button class="btn btn-sm btn-danger" data-toggle="tooltip" title="Xóa" type="button" value="<%= item['id'] %>">
+                      <button class="btn btn-sm btn-danger mb-1" data-toggle="tooltip" title="Xóa" type="button" value="<%= item['id'] %>">
                         <span class="fa fa-trash"></span>
                       </button>
                     </td>
@@ -88,6 +88,8 @@
                   <% } %>
                   </tbody>
                 </table>
+              </div>
+              <div class="panel-footer">
                 <button class="btn btn-primary" data-toggle="modal" data-target="#modalCreateItem">Thêm sản phẩm mới</button>
               </div>
             </div>
@@ -166,16 +168,24 @@
 <script src="/admin/vendor/jquery/jquery.min.js"></script>
 <script src="/admin/vendor/bootstrap/js/bootstrap.min.js"></script>
 <script src="/admin/vendor/jquery-slimscroll/jquery.slimscroll.min.js"></script>
-<script src="/admin/vendor/datatables/js/jquery.dataTables.min.js"></script>
+<script src="/admin/vendor/datatables/js/jquery.dataTables.js"></script>
 <script src="/admin/vendor/datatables/js/dataTables.bootstrap.min.js"></script>
 <script src="/admin/vendor/bootstrap-select/bootstrap-select.min.js"></script>
 
-<script src="/admin/js/klorofil-common.js"></script>
+<script src="/admin/js/admin-common.js"></script>
 <script src="/admin/js/ckeditor.js"></script>
 
 <script>
   $(document).ready(function() {
-    $('#table_items').DataTable();
+    $('#table_items').DataTable({
+      responsive: true,
+      columnDefs: [
+        {
+          orderable: false,
+          targets: [1, 6]
+        }
+      ]
+    });
 
     $('.item-action button').click(function(e) {
       let itemId = $(e.target).val();
