@@ -79,7 +79,7 @@ showHome = (req, res) => {
     if (error) throw error;
     res.render('index', {newItem: newItem, hotItem: hotItem});
   });
-}
+};
 
 showRegisterForm = (req, res) => {
   res.render('register');
@@ -124,12 +124,12 @@ userRegister = (req, res) => {
               let token = nanoid();
               let tokenExpired = new Date();
               tokenExpired.setMinutes(tokenExpired.getMinutes() + appConfig.tokenTime);
-              mySql.query("INSERT INTO users (email, name, password, confirmed, token, token_expired_at) VALUES (?, ?, ?, ?, ?, ?)", [email, name, hash, 0, token, tokenExpired], function(error, result) {
+              mySql.query("INSERT INTO users (email, name, password, confirmed, token, token_expired_at) VALUES (?, ?, ?, ?, ?, ?)", [email, name, hash, 0, token, tokenExpired], (error) => {
                 if (error) throw error;
                 // Send an email
                 let mailBody = `De hoan tat dang ky:
                         link: ${appConfig.url}/confirm-email?email=${email}&token=${token}"`;
-                sendMail('Admin', email, 'Hoan tat dang ky thanh', mailBody, (error, result) => {
+                sendMail('Admin', email, 'Hoan tat dang ky thanh', mailBody, (error) => {
                   if (error) throw error;
                   res.render('register', {message: `Email da duoc gui toi ${email}, hay xac nhan trong 30p`});
                 });
@@ -141,7 +141,7 @@ userRegister = (req, res) => {
       });
     }
   }
-}
+};
 
 userLogin = (req, res) => {
   let email = req.body.email;
@@ -185,7 +185,7 @@ confirmRegisterEmail = (req, res) => {
       if (!(result.length > 0 && new Date() < Date.parse(result[0]['token_expired_at']))) {
         res.render('message-only', {message: 'Xac minh that bai2'});
       } else {
-        mySql.query("UPDATE users SET confirmed = ?, token=?, token_expired_at=?", [1, '', ''], (error, result) => {
+        mySql.query("UPDATE users SET confirmed = ?, token=?, token_expired_at=?", [1, '', ''], (error) => {
           if (error) throw error;
           res.render('message-only', {message: 'Da xac minh'});
         })
@@ -220,6 +220,46 @@ showItem = (req, res) => {
 /*
  * Admin function
  */
+
+adminShowGeneral = (req, res) => {
+  res.render('admin/general', {});
+};
+
+adminShowConfigs = (req, res) => {
+  mySql.query("SELECT * FROM config WHERE 1", [], (error, rawConfigs) => {
+    if (error) throw error;
+    let configs = {};
+    rawConfigs.forEach((conf) => {
+      configs[conf['name']] = conf['value'];
+    });
+    let data = {configs: configs};
+    if (req.flashStatus && req.flashMessage) {
+      data.flashStatus = req.flashStatus;
+      data.flashMessage = req.flashMessage;
+    }
+    res.render('admin/configs', data)
+  });
+};
+
+adminUpdateConfigs = (req, res) => {
+  let configArray = [
+    'page_name', 'shop_owner', 'phone', 'email', 'facebook', 'address', 'shop_description', 'atm'
+  ];
+  configArray.forEach((conf, index) => {
+    if (req.body[conf]) {
+      mySql.query("UPDATE config SET value=? WHERE name=?", [req.body[conf], conf], (error) => {
+        if (error) throw error;
+        if (index === configArray.length - 1) {
+          req.flashStatus = 'success';
+          req.flashMessage = 'Cập nhật thành công!';
+          return adminShowConfigs(req, res);
+        }
+      });
+    }
+  });
+
+};
+
 adminShowItems = (req, res) => {
   mySql.query("SELECT `items`.*, `categories`.`name` as category_name FROM `items` INNER JOIN `categories` ON `items`.`category_id` = `categories`.`id` WHERE 1", [], (err, items) => {
     if (err) throw err;
@@ -243,10 +283,46 @@ adminCreateItem = (req, res) => {
     fs.rename(oldPath, newPath, function (err) {
       if (err) throw err;
       req.flashStatus = 'success';
-      req.flashMessage = 'Tao san pham thanh cong!';
-      adminShowItems(req, res);
+      req.flashMessage = 'Tạo sản phẩm thành công!';
+      return adminShowItems(req, res);
     });
   });
+};
+
+adminShowCategories = (req, res) => {
+  mySql.query("SELECT * FROM categories WHERE 1", [], (error, categories) => {
+    if (error) throw error;
+    let data = {categories: categories};
+    if (req.flashStatus && req.flashMessage) {
+      data.flashStatus = req.flashStatus;
+      data.flashMessage = req.flashMessage;
+    }
+    res.render('admin/categories', data);
+  })
+};
+
+adminShowUsers = (req, res) => {
+    mySql.query("SELECT * FROM users WHERE level = 1", [], (err, users) => {
+      if (err) throw err;
+      let data = {users: users};
+      if (req.flashStatus && req.flashMessage) {
+        data.flashStatus = req.flashStatus;
+        data.flashMessage = req.flashMessage;
+      }
+      res.render('admin/users', data);
+    })
+};
+
+adminShowManagers = (req, res) => {
+  mySql.query("SELECT * FROM users WHERE level != 1", [], (err, admins) => {
+    if (err) throw err;
+    let data = {admins: admins};
+    if (req.flashStatus && req.flashMessage) {
+      data.flashStatus = req.flashStatus;
+      data.flashMessage = req.flashMessage;
+    }
+    res.render('admin/admins', data);
+  })
 };
 
 checkAdmin = (req, res, next) => {
@@ -276,8 +352,17 @@ app.get('/logout', userLogout);
 app.get('/san-pham/:itemId', showItem);
 
 // Admin
+app.get('/admin/tong-quan', adminShowGeneral);
+
+app.get('/admin/cau-hinh', adminShowConfigs);
+app.post('/admin/cau-hinh', adminUpdateConfigs);
+
 app.get('/admin/san-pham', adminShowItems);
 app.post('/admin/san-pham', adminCreateItem);
+
+app.get('/admin/danh-muc', adminShowCategories);
+app.get('/admin/nguoi-dung', adminShowUsers);
+app.get('/admin/quan-tri-vien', adminShowManagers);
 
 /*
  * End Routes
@@ -300,7 +385,6 @@ sendMail = (from, toEmail, subject, body, callback) => {
 // app.locals = viewHelper;
 
 app.locals.formatPrice = price => {
-
   price = price.toString();
   let rgx = /(\d+)(\d{3})/;
   while (rgx.test(price)) {
@@ -309,9 +393,10 @@ app.locals.formatPrice = price => {
   return '<small>đ</small>' + price;
 };
 
-app.locals.formatDay = input => {
-  let day = new Date(input);
-  return `${day.getDate()}/${day.getMonth()}/${day.getFullYear()}`;
+app.locals.formatDay = (input, full = false) => {
+  let time = new Date(input);
+  let result = full ? `${('0' + time.getHours()).slice(-2)}:${ ('0' + time.getMinutes()).slice(-2)}:${('0' + time.getSeconds()).slice(-2)}`: ``;
+  return result + ` ${('0' + time.getDate()).slice(-2)}/${('0' + (time.getMonth() + 1)).slice(-2)}/${time.getFullYear()}`
 };
 
 app.locals.logged_in = () => {

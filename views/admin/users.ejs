@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <title>Tables | Klorofil - Free Bootstrap Dashboard Template</title>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <!-- VENDOR CSS -->
+  <link rel="stylesheet" href="/admin/vendor/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/admin/vendor/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/admin/vendor/linearicons/style.css">
+  <link rel="stylesheet" href="/admin/vendor/datatables/css/dataTables.bootstrap.min.css">
+  <link rel="stylesheet" href="/admin/vendor/bootstrap-select/bootstrap-select.min.css">
+  <!-- MAIN CSS -->
+  <link rel="stylesheet" href="/admin/css/main.css">
+  <!-- GOOGLE FONTS -->
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700" rel="stylesheet">
+  <!-- ICONS -->
+  <link rel="apple-touch-icon" sizes="76x76" href="/admin/img/apple-icon.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/admin/img/favicon.png">
+</head>
+
+<body>
+<!-- WRAPPER -->
+<div id="wrapper">
+  <!-- NAVBAR -->
+  <%- include('component/_navbar') %>
+  <!-- END NAVBAR -->
+  <!-- LEFT SIDEBAR -->
+  <%- include('component/_sidebar') %>
+  <!-- END LEFT SIDEBAR -->
+  <!-- MAIN -->
+  <div class="main">
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+      <div class="container-fluid">
+        <h3 class="page-title">Tables</h3>
+        <% if (typeof flashStatus !== "undefined" && typeof flashMessage !== "undefined") { %>
+        <div class="alert alert-<%= flashStatus %> alert-dismissible" role="alert">
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
+          <i class="fa fa-check-circle"></i> <%= flashMessage %>
+        </div>
+        <% } %>
+        <div class="row">
+          <div class="col-md-12">
+            <!-- TABLE USERS -->
+            <div class="panel">
+              <div class="panel-heading">
+                <h3 class="panel-title">Quản lý người dùng</h3>
+              </div>
+              <div class="panel-body">
+                <% if (typeof users !== "undefined" && users.length > 0) { %>
+                <table class="table table-hover" id="table_users">
+                  <thead>
+                  <tr>
+                    <th>Email</th>
+                    <th>Họ và tên</th>
+                    <th>Số điện thoại</th>
+                    <th>Ngày tạo</th>
+                    <th>Hành động</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <% if (typeof users !== "undefined") { %>
+                  <% users.forEach(user => { %>
+                  <tr>
+                    <td><%= user['email'] %></td>
+                    <td><%= user['name'] %></td>
+                    <td><%= user['phone'] %></td>
+                    <td><%= formatDay(user['created_at'], true) %></td>
+                    <td class="user-action">
+                      <a href="/admin/thanh-vien/<%= user['id'] %>" class="btn btn-sm btn-info mb-1" data-toggle="tooltip" title="Xem">
+                        <span class="fa fa-info-circle"></span>
+                      </a>
+                      <button class="btn btn-sm btn-danger btn-delete mb-1" data-toggle="tooltip" title="Xóa" type="button" value="<%= user['id'] %>">
+                        <span class="fa fa-trash"></span>
+                      </button>
+                    </td>
+                  </tr>
+                  <% }) %>
+                  <% } %>
+                  </tbody>
+                </table>
+                <% } else { %>
+                <h5>Chưa có thông tin!</h5>
+                <% } %>
+              </div>
+            </div>
+            <!-- END TABLE USERS -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- END MAIN CONTENT -->
+  </div>
+  <!-- END MAIN -->
+  <div class="clearfix"></div>
+  <footer>
+    <div class="container-fluid">
+    </div>
+  </footer>
+</div>
+<!-- END WRAPPER -->
+<!-- Javascript -->
+<script src="/admin/vendor/jquery/jquery.min.js"></script>
+<script src="/admin/vendor/bootstrap/js/bootstrap.min.js"></script>
+<script src="/admin/vendor/jquery-slimscroll/jquery.slimscroll.min.js"></script>
+<script src="/admin/vendor/datatables/js/jquery.dataTables.js"></script>
+<script src="/admin/vendor/datatables/js/dataTables.bootstrap.min.js"></script>
+<script src="/admin/vendor/bootstrap-select/bootstrap-select.min.js"></script>
+
+<script src="/admin/js/admin-common.js"></script>
+
+<script>
+  $(document).ready(function() {
+    $('#table_users').DataTable({
+      responsive: true,
+      columnDefs: [
+        {
+          orderable: false,
+          targets: 4
+        }
+      ]
+    });
+
+    $('.user-action .btn-delete').click(function(e) {
+      let userId = $(e.target).val();
+      // delete user
+    });
+  });
+</script>
+</body>
+
+</html>
