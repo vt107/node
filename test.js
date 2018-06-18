@@ -1,5 +1,5 @@
 const mysql = require('mysql');
-const async = require('async');
+// const async = require('async');
 
 const mySql = mysql.createConnection({
     host: 'localhost',
@@ -8,23 +8,8 @@ const mySql = mysql.createConnection({
     database: 'chat'
 });
 
-async.waterfall([
-  (callback) => {
-    mySql.query("SELECT * FROM items ORDER BY created_at DESC LIMIT 6",[], function (error, newItem) {
-      if (error) throw error;
-      callback(null, newItem);
-    });
-  },
-  (newItem, callback) => {
-    mySql.query("SELECT * FROM items ORDER BY sold DESC LIMIT 6",[], function (error, hotItem) {
-      if (error) throw error;
-      callback(null, newItem, hotItem);
-    });
-  }
-], (error, newItem, hotItem) => {
+mySql.query("UPDATE test set name = ? WHERE id = 2",['test2'], function (error, result) {
   if (error) throw error;
-  console.log(newItem.length);
-  console.log(hotItem.length);
-  process.exit(0);
+  console.log(result);
+  process.exit();
 });
-

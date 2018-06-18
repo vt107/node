@@ -29,6 +29,7 @@ const appConfig = {
     password: 'vantho',
     database: 'chat'
   }
+
 };
 
 const gmail = nodemailer.createTransport({
@@ -221,6 +222,10 @@ showItem = (req, res) => {
  * Admin function
  */
 
+redirectToGeneral = (req, res) => {
+  res.redirect('/admin/tong-quan');
+};
+
 adminShowGeneral = (req, res) => {
   res.render('admin/general', {});
 };
@@ -237,7 +242,7 @@ adminShowConfigs = (req, res) => {
       data.flashStatus = req.flashStatus;
       data.flashMessage = req.flashMessage;
     }
-    res.render('admin/configs', data)
+    res.render('admin/configs', data);
   });
 };
 
@@ -276,6 +281,20 @@ adminShowItems = (req, res) => {
 };
 
 adminCreateItem = (req, res) => {
+  if (req.body.name && req.body.description && req.body.seo_keywords && req.body.category_id && req.body.price && req.body.available) {
+    mySql.query("INSERT INTO `items`(`name`, `description`, `seo_keywords`, `category_id`, `price`, `available`)" +
+      " VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      [req.body.name, req.body.description, req.body.seo_keywords, req.body.category_id, req.body.price, req.body.available], (error, result) => {
+      if (error) throw error;
+      let itemId = result.insertId;
+      });
+  } else {
+
+  }
+
+
+
+
   let form = new formidable.IncomingForm();
   form.parse(req, function (err, fields, files) {
     let oldPath = files.image.path;
@@ -290,7 +309,7 @@ adminCreateItem = (req, res) => {
 };
 
 adminShowCategories = (req, res) => {
-  mySql.query("SELECT * FROM categories WHERE 1", [], (error, categories) => {
+  mySql.query("SELECT * FROM categories WHERE 1 ORDER BY id DESC", [], (error, categories) => {
     if (error) throw error;
     let data = {categories: categories};
     if (req.flashStatus && req.flashMessage) {
@@ -299,6 +318,38 @@ adminShowCategories = (req, res) => {
     }
     res.render('admin/categories', data);
   })
+};
+
+adminUpdateCategory = (req, res) => {
+  if (req.body.category_id && req.body.name && req.body.parent_id) {
+    mySql.query("UPDATE categories SET name = ?, parent_id = ? WHERE id = ?",
+      [req.body.name, req.body.parent_id, req.body.category_id], (err, result) => {
+      if (err) throw err;
+        return res.json({
+          status: (result && result.affectedRows > 0) ? 'success' : 'failed',
+        });
+    })
+  } else {
+    return res.json({
+      'status': 'failed'
+    });
+  }
+};
+
+adminDeleteCategory = (req, res) => {
+  if (req.body.category_id) {
+    mySql.query("UPDATE categories SET name = ?, parent_id = ? WHERE id = ?",
+      [req.body.name, req.body.parent_id, req.body.category_id], (err, result) => {
+        if (err) throw err;
+          return res.json({
+            status: (result && result.affectedRows > 0) ? 'success' : 'failed',
+          });
+      })
+  } else {
+    return res.json({
+      'status': 'failed'
+    });
+  }
 };
 
 adminShowUsers = (req, res) => {
@@ -352,6 +403,7 @@ app.get('/logout', userLogout);
 app.get('/san-pham/:itemId', showItem);
 
 // Admin
+app.get('/admin', redirectToGeneral);
 app.get('/admin/tong-quan', adminShowGeneral);
 
 app.get('/admin/cau-hinh', adminShowConfigs);
@@ -361,8 +413,13 @@ app.get('/admin/san-pham', adminShowItems);
 app.post('/admin/san-pham', adminCreateItem);
 
 app.get('/admin/danh-muc', adminShowCategories);
+app.put('/admin/danh-muc', adminUpdateCategory);
+app.delete('/admin/danh-muc', adminDeleteCategory);
+
+
 app.get('/admin/nguoi-dung', adminShowUsers);
 app.get('/admin/quan-tri-vien', adminShowManagers);
+
 
 /*
  * End Routes

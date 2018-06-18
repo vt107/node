@@ -1,8 +1,8 @@
 <!doctype html>
-<html lang="en">
+<html lang="vi">
 
 <head>
-  <title>Tables | Klorofil - Free Bootstrap Dashboard Template</title>
+  <title>Danh sách quản trị viên</title>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
@@ -44,14 +44,14 @@
         <% } %>
         <div class="row">
           <div class="col-md-12">
-            <!-- TABLE USERS -->
+            <!-- TABLE ADMINS -->
             <div class="panel">
               <div class="panel-heading">
                 <h3 class="panel-title">Danh sách quản trị viên</h3>
               </div>
               <div class="panel-body">
                 <% if (typeof admins !== "undefined" && admins.length > 0) { %>
-                <table class="table table-hover" id="table_users">
+                <table class="table table-hover" id="table_admins">
                   <thead>
                   <tr>
                     <th>Email</th>
@@ -91,7 +91,7 @@
                 <h5></h5>
               </div>
             </div>
-            <!-- END TABLE USERS -->
+            <!-- END TABLE ADMINS -->
           </div>
         </div>
       </div>
@@ -118,7 +118,7 @@
 
 <script>
   $(document).ready(function() {
-    $('#table_users').DataTable();
+    $('#table_admins').DataTable();
 
     $('.user-action .btn-delete').click(function(e) {
       let userId = $(e.target).val();

@@ -47,6 +47,7 @@ $(document).ready(function() {
     // Set nav-bar active
     let urlArray = [
       '/admin/tong-quan',
+      'admin/cau-hinh',
       '/admin/nguoi-dung',
       '/admin/quan-tri-vien',
       '/admin/danh-muc',
@@ -243,7 +244,42 @@ $.fn.clickToggle = function( f1, f2 ) {
 			return f1.apply(this, arguments);
 		});
 	});
+};
 
+let iconArray = {
+  info: 'fa fa-info',
+  success: 'fa fa-check',
+  warning: 'fa fa-exclamation',
+  danger: 'fa fa-exclamation-triangle'
+};
+
+function showAlert(type, message) {
+  $.notify({
+    // options
+    icon: iconArray[type],
+    title: '',
+    message: message,
+  },{
+    type: type,
+    allow_dismiss: true,
+    newest_on_top: false,
+    showProgressbar: false,
+    offset: 20,
+    spacing: 10,
+    z_index: 1031,
+    delay: 4000,
+    timer: 1000,
+    mouse_over: null,
+    animate: {
+      enter: 'animated fadeInDown',
+      exit: 'animated fadeOutUp'
+    },
+    onShow: null,
+    onShown: null,
+    onClose: null,
+    onClosed: null,
+    icon_type: 'class',
+  });
 }
 
 

@@ -1,8 +1,8 @@
 <!doctype html>
-<html lang="en">
+<html lang="vi">
 
 <head>
-  <title>Tables | Klorofil - Free Bootstrap Dashboard Template</title>
+  <title>Quản lý sản phẩm</title>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
@@ -50,7 +50,7 @@
                 <h3 class="panel-title">Quản lý sản phẩm</h3>
               </div>
               <div class="panel-body">
-                <table class="table table-hover" id="table_items">
+                <table class="table table-hover table-bordered" id="table_items">
                   <thead>
                   <tr>
                     <th>Tên sản phẩm</th>
@@ -136,6 +136,9 @@
                       <br>
                       <label>Mô tả sản phẩm <span class="required"></span></label>
                       <textarea class="form-control" placeholder="" rows="4" name="description" id="description"></textarea>
+                      <br>
+                      <label>Từ khóa SEO</label>
+                      <input class="form-control" name="seo_keywords" placeholder="Mặc định sẽ là tên sản phẩm">
                       <br>
                       <label>Số lượng có sẵn</label>
                       <input type="number" class="form-control" name="available" placeholder="Số lượng có sẵn để bán" value="1">

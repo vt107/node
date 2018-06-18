@@ -11719,7 +11719,7 @@
        *  @dtopt Language
        *  @name DataTable.defaults.language.searchPlaceholder
        */
-      "sSearchPlaceholder": "Tên hoặc Email...",
+      "sSearchPlaceholder": "Nhập từ khóa",
 
 
       /**
