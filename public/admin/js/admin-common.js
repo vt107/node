@@ -282,4 +282,14 @@ function showAlert(type, message) {
   });
 }
 
+const message = {
+  confirm_delete: 'Bạn có chắc chắn muốn xóa?',
+  confirm_action: 'Bạn có chắc chắn muốn thao tác?',
 
+  delete_success: 'Xóa thành công!',
+  delete_failed: 'Xóa thất bại!',
+  update_success: 'Cập nhật thành công!',
+  update_failed: 'Cập nhật thất bại!',
+  action_success: 'Thao tác thành công!',
+  action_failed: 'Thao tác thất bại!',
+};

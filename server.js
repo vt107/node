@@ -134,7 +134,6 @@ userRegister = (req, res) => {
                   if (error) throw error;
                   res.render('register', {message: `Email da duoc gui toi ${email}, hay xac nhan trong 30p`});
                 });
-
               })
             });
           });
@@ -161,8 +160,10 @@ userLogin = (req, res) => {
           if (error) throw error;
           if (result) {
             req.session.user = {
+              id: user['id'],
               name: user['name'],
               email: user['email'],
+              level: parseInt(user['level']),
               logged_in: true
             };
             res.render('login', {error: 'Dang nhap thanh cong'});
@@ -195,6 +196,63 @@ confirmRegisterEmail = (req, res) => {
   }
 };
 
+showForgotPasswordForm = (req, res) => {
+  let data = {};
+  if (req.flashStatus && req.flashMessage) {
+    data.flashStatus = req.flashStatus;
+    data.flashMessage = req.flashMessage;
+  }
+
+  res.render('password/forgot_password', data);
+};
+
+createPasswordRecoverEmail = (req, res) => {
+  let email = req.body.email;
+  if (email && validator.lengthValid(email, 5, 100) && validator.isEmail(email)) {
+    mySql.query("SELECT * FROM users WHERE email = ? AND confirmed = ?", [email, 1], (err, result) => {
+      if (err) throw err;
+      if (result.length === 0) {
+        let data = {
+          email: email,
+          flashStatus: 'danger',
+          flashMessage: ''
+        };
+
+        res.render('password/forgot_password', data);
+      } else {
+        // Create a email
+        let token = nanoid(5);
+        let tokenExpired = new Date();
+        tokenExpired.setMinutes(tokenExpired.getMinutes() + appConfig.tokenTime);
+        mySql.query("UPDATE users SET token=?, token_expired_at=? WHERE email=?", [token, tokenExpired, email], (error) => {
+          if (error) throw error;
+          // Send an email
+          let mailBody = `Vui long nhap ma sau de lay lai mat khau: ${token}`;
+          sendMail('Admin', email, 'Khoi phuc lai mat khau', mailBody, (error) => {
+            if (error) throw error;
+
+            let data = {
+              email: email,
+              flashStatus: 'success',
+              flashMessage: ''
+            };
+
+            res.render('password/reset_password_token', data);
+          });
+        })
+      }
+    })
+  } else {
+    let data = {
+      email: email,
+      flashStatus: 'danger',
+      flashMessage: ''
+    };
+
+    res.render('password/forgot_password', data);
+  }
+};
+
 userLogout = (req, res) => {
   req.session.destroy();
   res.render('login');
@@ -221,6 +279,56 @@ showItem = (req, res) => {
 /*
  * Admin function
  */
+
+adminShowLogin = (req, res) => {
+  let data = {
+    email: req.body.email
+  };
+  if (req.flashStatus && req.flashMessage) {
+    data.flashStatus = req.flashStatus;
+    data.flashMessage = req.flashMessage;
+  }
+
+  res.render('admin/login', data)
+};
+
+adminLoginAttempt = (req, res) => {
+  let email = req.body.email;
+  let password = req.body.password;
+  if (email && password && validator.isEmail(email) && validator.lengthValid(email, 5, 100) && validator.lengthValid(password, 5, 100)) {
+    mySql.query("SELECT * FROM users WHERE email=? AND confirmed=? AND level!=?", [email, 1, 1], (error, result) => {
+      if (error) throw error;
+      if (result.length === 0) {
+        req.flashStatus = 'danger';
+        req.flashMessage = 'Sai thông tin đăng nhập!';
+        return adminShowLogin(req, res);
+      } else {
+        let user = result[0];
+        bcrypt.compare(password, user['password'], (error, result) => {
+          if (error) throw error;
+          if (result) {
+            req.session.user = {
+              id: user['id'],
+              name: user['name'],
+              email: user['email'],
+              level: parseInt(user['level']),
+              logged_in: true
+            };
+            return adminShowGeneral(req, res);
+          } else {
+            req.flashStatus = 'danger';
+            req.flashMessage = 'Sai thông tin đăng nhập!';
+            return adminShowLogin(req, res);
+          }
+        })
+      }
+    });
+  } else {
+    req.flashStatus = 'danger';
+    req.flashMessage = 'Sai thông tin đăng nhập!';
+    return adminShowLogin(req, res);
+  }
+};
 
 redirectToGeneral = (req, res) => {
   res.redirect('/admin/tong-quan');
@@ -308,6 +416,25 @@ adminCreateItem = (req, res) => {
   });
 };
 
+adminUpdateItem = (req, res) => {
+
+};
+
+adminDeleteItem = (req, res) => {
+  if (req.body.item_id) {
+    mySql.query("DELETE FROM items WHERE id=?", [req.body.item_id], (err, result) => {
+      if (err) throw err;
+      return res.json({
+        status: (result && result.affectedRows > 0) ? 'success' : 'failed',
+      });
+    })
+  } else {
+    return res.json({
+      status: 'failed'
+    });
+  }
+};
+
 adminShowCategories = (req, res) => {
   mySql.query("SELECT * FROM categories WHERE 1 ORDER BY id DESC", [], (error, categories) => {
     if (error) throw error;
@@ -338,8 +465,7 @@ adminUpdateCategory = (req, res) => {
 
 adminDeleteCategory = (req, res) => {
   if (req.body.category_id) {
-    mySql.query("UPDATE categories SET name = ?, parent_id = ? WHERE id = ?",
-      [req.body.name, req.body.parent_id, req.body.category_id], (err, result) => {
+    mySql.query("DELETE FROM categories WHERE id=?", [req.body.category_id], (err, result) => {
         if (err) throw err;
           return res.json({
             status: (result && result.affectedRows > 0) ? 'success' : 'failed',
@@ -347,7 +473,7 @@ adminDeleteCategory = (req, res) => {
       })
   } else {
     return res.json({
-      'status': 'failed'
+      status: 'failed'
     });
   }
 };
@@ -364,6 +490,36 @@ adminShowUsers = (req, res) => {
     })
 };
 
+adminUpgradeUser = (req, res) => {
+  if (req.body.user_id) {
+    mySql.query("UPDATE users set level = ? WHERE id=? AND level=?", [2, req.body.user_id, 1], (err, result) => {
+      if (err) throw err;
+      return res.json({
+        status: (result && result.affectedRows > 0) ? 'success' : 'failed',
+      });
+    })
+  } else {
+    return res.json({
+      status: 'failed'
+    });
+  }
+};
+
+adminDeleteUser = (req, res) => {
+  if (req.body.user_id) {
+    mySql.query("DELETE FROM users WHERE id=? AND level=?", [req.body.user_id, 1], (err, result) => {
+        if (err) throw err;
+        return res.json({
+          status: (result && result.affectedRows > 0) ? 'success' : 'failed',
+        });
+      })
+  } else {
+    return res.json({
+      status: 'failed'
+    });
+  }
+};
+
 adminShowManagers = (req, res) => {
   mySql.query("SELECT * FROM users WHERE level != 1", [], (err, admins) => {
     if (err) throw err;
@@ -376,11 +532,67 @@ adminShowManagers = (req, res) => {
   })
 };
 
+adminDowngradeManager = (req, res) => {
+  let targetId = parseInt(req.body.admin_id);
+  if (targetId) {
+    if (targetId === req.session.user.id) {
+      return res.json({
+        status: 'failed',
+        message: 'Bạn không thể sửa chính mình!'
+      });
+    } else if (req.session.user.level === 3) {
+      mySql.query("UPDATE users set level = ? WHERE id=? AND level=?", [1, req.body.admin_id, 2], (err, result) => {
+        if (err) throw err;
+        return res.json({
+          status: (result && result.affectedRows > 0) ? 'success' : 'failed',
+        });
+      })
+    } else {
+      return res.json({
+        status: 'failed',
+        message: 'Chỉ Super Admin mới được thực hiện thao tác này!'
+      });
+    }
+  } else {
+    return res.json({
+      status: 'failed'
+    });
+  }
+};
+
+adminDeleteManager = (req, res) => {
+  let targetId = parseInt(req.body.admin_id);
+  if (targetId) {
+    if (targetId === req.session.user.id) {
+      return res.json({
+        status: 'failed',
+        message: 'Bạn không thể xóa chính mình!'
+      });
+    } else if (req.session.user.level === 3) {
+      mySql.query("DELETE FROM users WHERE id=? AND level=?", [req.body.admin_id, 2], (err, result) => {
+        if (err) throw err;
+        return res.json({
+          status: (result && result.affectedRows > 0) ? 'success' : 'failed',
+        });
+      })
+    } else {
+      return res.json({
+        status: 'failed',
+        message: 'Chỉ Super Admin mới được thực hiện thao tác này!'
+      });
+    }
+  } else {
+    return res.json({
+      status: 'failed'
+    });
+  }
+};
+
 checkAdmin = (req, res, next) => {
-  if (req.session.user.level === 1) {
+  if (req.session.user.level === 2 || req.session.user.level === 3) {
     next();
   } else {
-    res.redirect('/');
+    res.redirect('/admin/login');
   }
 };
 /*
@@ -402,8 +614,14 @@ app.get('/logout', userLogout);
 
 app.get('/san-pham/:itemId', showItem);
 
+app.get('/quen-mat-khau', show)
+
 // Admin
 app.get('/admin', redirectToGeneral);
+
+app.get('/admin/login', adminShowLogin);
+app.post('/admin/login', adminLoginAttempt);
+
 app.get('/admin/tong-quan', adminShowGeneral);
 
 app.get('/admin/cau-hinh', adminShowConfigs);
@@ -411,6 +629,8 @@ app.post('/admin/cau-hinh', adminUpdateConfigs);
 
 app.get('/admin/san-pham', adminShowItems);
 app.post('/admin/san-pham', adminCreateItem);
+app.put('/admin/san-pham', adminUpdateItem);
+app.delete('/admin/san-pham', adminDeleteItem);
 
 app.get('/admin/danh-muc', adminShowCategories);
 app.put('/admin/danh-muc', adminUpdateCategory);
@@ -418,7 +638,12 @@ app.delete('/admin/danh-muc', adminDeleteCategory);
 
 
 app.get('/admin/nguoi-dung', adminShowUsers);
+app.put('/admin/nguoi-dung', adminUpgradeUser);
+app.delete('/admin/nguoi-dung', adminDeleteUser);
+
 app.get('/admin/quan-tri-vien', adminShowManagers);
+app.put('/admin/quan-tri-vien', adminDowngradeManager);
+app.delete('/admin/quan-tri-vien', adminDeleteManager);
 
 
 /*

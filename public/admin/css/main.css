@@ -998,6 +998,17 @@ ul.activity-list > li {
       content: ' ';
       vertical-align: middle;
       height: 100%; }
+    .auth-box .left .alert {
+      padding: 10px !important;
+      -webkit-border-radius: 0;
+      -moz-border-radius: 0;
+      text-align: left;
+      border-radius: 0; }
+      .auth-box .left .alert .close {
+        right: 0 }
+    .auth-box .left .alert.error-alert {
+      display: none;}
+
   .auth-box .right {
     float: right;
     width: 58%;
@@ -1766,4 +1777,8 @@ span.required {
 
 #table_items tbody .item-images {
   max-width: 100px;
+}
+
+.invalid {
+  border-color: red;
 }

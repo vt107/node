@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="/admin/vendor/linearicons/style.css">
   <link rel="stylesheet" href="/admin/vendor/datatables/css/dataTables.bootstrap.min.css">
   <link rel="stylesheet" href="/admin/vendor/bootstrap-select/bootstrap-select.min.css">
+  <link rel="stylesheet" href="/admin/css/animate.min.css">
   <!-- MAIN CSS -->
   <link rel="stylesheet" href="/admin/css/main.css">
   <!-- GOOGLE FONTS -->
@@ -64,18 +65,21 @@
                   </thead>
                   <tbody>
                   <% admins.forEach(admin => { %>
-                  <% let role = admin['phone'] == 2? 'Admin': 'Super Admin' %>
-                  <tr>
+                  <% let role = admin['level'] == 2? 'Admin': 'Super Admin' %>
+                  <tr id="tr_<%= admin['id'] %>">
                     <td><%= admin['email'] %></td>
                     <td><%= admin['name'] %></td>
                     <td><%= admin['phone'] %></td>
                     <td><%= role %></td>
                     <td><%= formatDay(admin['created_at'], true) %></td>
                     <td class="user-action">
-                      <a href="/admin/quan-tri-vien/<%= admin['id'] %>" class="btn btn-sm btn-info" data-toggle="tooltip" title="Xem">
+                      <a href="/admin/quan-tri-vien/<%= admin['id'] %>" class="btn btn-sm btn-info mb-1" data-toggle="tooltip" title="Xem">
                         <span class="fa fa-info-circle"></span>
                       </a>
-                      <button class="btn btn-sm btn-danger btn-delete" data-toggle="tooltip" title="Xóa" type="button" value="<%= admin['id'] %>">
+                      <button class="btn btn-sm btn-primary mb-1" data-toggle="tooltip" title="Giáng chức" type="button" onclick="downgradeAdmin(<%= admin['id'] %>)">
+                        <span class="fa fa-level-down"></span>
+                      </button>
+                      <button class="btn btn-sm btn-danger mb-1" data-toggle="tooltip" title="Xóa" type="button" onclick="deleteAdmin(<%= admin['id'] %>)">
                         <span class="fa fa-trash"></span>
                       </button>
                     </td>
@@ -114,6 +118,7 @@
 <script src="/admin/vendor/datatables/js/dataTables.bootstrap.min.js"></script>
 <script src="/admin/vendor/bootstrap-select/bootstrap-select.min.js"></script>
 
+<script src="/admin/js/bootstrap-notify.js"></script>
 <script src="/admin/js/admin-common.js"></script>
 
 <script>
@@ -125,6 +130,52 @@
       // delete user
     });
   });
+
+  function deleteAdmin(id) {
+    if (confirm(message.confirm_delete)) {
+      $.ajax({
+        url: "/admin/quan-tri-vien",
+        method: 'delete',
+        data: {
+          admin_id: id
+        },
+        success: function(result) {
+          if (result && result.status === 'success') {
+            showAlert('success', result.message ? result.message : message.delete_success);
+            $(`#tr_${id}`).hide(500);
+          } else {
+            showAlert('danger', result.message ? result.message : message.delete_failed);
+          }
+        },
+        failed: function(error) {
+          showAlert('danger', error);
+        }
+      });
+    }
+  }
+
+  function downgradeAdmin(id) {
+    if (confirm(message.confirm_action)) {
+      $.ajax({
+        url: "/admin/quan-tri-vien",
+        method: 'put',
+        data: {
+          admin_id: id
+        },
+        success: function(result) {
+          if (result && result.status === 'success') {
+            showAlert('success', result.message ? result.message : message.action_success);
+            $(`#tr_${id}`).hide(500);
+          } else {
+            showAlert('danger', result.message ? result.message : message.action_failed);
+          }
+        },
+        failed: function(error) {
+          showAlert('danger', error);
+        }
+      });
+    }
+  }
 </script>
 </body>
 

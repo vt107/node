@@ -266,9 +266,9 @@
       success: function(result) {
         console.log(result);
         if (result && result.status === 'success') {
-          showAlert('success', 'Cập nhật thành công!');
+          showAlert('success', result.message ? result.message : message.update_success);
         } else {
-          showAlert('danger', 'Cập nhật thất bại!');
+          showAlert('success', result.message ? result.message : message.update_failed);
         }
       },
       failed: function(error) {
@@ -277,7 +277,7 @@
     });
   }
   function deleteCategory(id) {
-    if (confirm("Bạn sắp xóa một danh mục?")) {
+    if (confirm(message.confirm_delete)) {
       $.ajax({
         url: "/admin/danh-muc",
         method: 'delete',
@@ -287,10 +287,10 @@
         success: function(result) {
           console.log(result);
           if (result && result.status === 'success') {
-            showAlert('success', 'Xóa thành công!');
+            showAlert('success', message.delete_success);
             $(`#tr_${id}`).hide(500);
           } else {
-            showAlert('danger', 'Xóa thất bại!');
+            showAlert('danger', message.delete_failed);
           }
         },
         failed: function(error) {

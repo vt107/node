@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="/admin/vendor/linearicons/style.css">
   <link rel="stylesheet" href="/admin/vendor/datatables/css/dataTables.bootstrap.min.css">
   <link rel="stylesheet" href="/admin/vendor/bootstrap-select/bootstrap-select.min.css">
+  <link rel="stylesheet" href="/admin/css/animate.min.css">
   <!-- MAIN CSS -->
   <link rel="stylesheet" href="/admin/css/main.css">
   <!-- GOOGLE FONTS -->
@@ -65,7 +66,7 @@
                   <tbody>
                   <% if (typeof items !== "undefined") { %>
                   <% items.forEach(item => { %>
-                  <tr>
+                  <tr id="tr_<%= item['id'] %>">
                     <td><%= item['name'] %></td>
                     <td><img class="item-images" src="/<%= item['image'] %>" ></td>
                     <td><%= item['category_name'] %></td>
@@ -79,7 +80,7 @@
                       <a href="/admin/san-pham/<%= item['id'] %>/edit" class="btn btn-sm btn-primary mb-1" data-toggle="tooltip" title="Sửa">
                         <span class="fa fa-pencil"></span>
                       </a>
-                      <button class="btn btn-sm btn-danger mb-1" data-toggle="tooltip" title="Xóa" type="button" value="<%= item['id'] %>">
+                      <button class="btn btn-sm btn-danger mb-1" data-toggle="tooltip" title="Xóa" type="button" onclick="deleteItem(<%= item['id'] %>)">
                         <span class="fa fa-trash"></span>
                       </button>
                     </td>
@@ -175,6 +176,7 @@
 <script src="/admin/vendor/datatables/js/dataTables.bootstrap.min.js"></script>
 <script src="/admin/vendor/bootstrap-select/bootstrap-select.min.js"></script>
 
+<script src="/admin/js/bootstrap-notify.js"></script>
 <script src="/admin/js/admin-common.js"></script>
 <script src="/admin/js/ckeditor.js"></script>
 
@@ -190,11 +192,31 @@
       ]
     });
 
-    $('.item-action button').click(function(e) {
-      let itemId = $(e.target).val();
-      // delete item
-    });
   });
+
+  function deleteItem(id) {
+    if (confirm(message.confirm_delete)) {
+      $.ajax({
+        url: "/admin/san-pham",
+        method: 'delete',
+        data: {
+          item_id: id
+        },
+        success: function(result) {
+          console.log(result);
+          if (result && result.status === 'success') {
+            showAlert('success', message.delete_success);
+            $(`#tr_${id}`).hide(500);
+          } else {
+            showAlert('danger', message.delete_failed);
+          }
+        },
+        failed: function(error) {
+          showAlert('danger', error);
+        }
+      });
+    }
+  }
 
   ClassicEditor
     .create( document.querySelector( '#description' ) )

@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en" class="fullscreen-bg">
+
+<head>
+  <title>Login | Klorofil - Free Bootstrap Dashboard Template</title>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <!-- VENDOR CSS -->
+  <link rel="stylesheet" href="/admin/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/admin/vendor/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/admin/vendor/linearicons/style.css">
+  <!-- MAIN CSS -->
+  <link rel="stylesheet" href="/admin/css/main.css">
+  <!-- GOOGLE FONTS -->
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700" rel="stylesheet">
+  <!-- ICONS -->
+  <link rel="apple-touch-icon" sizes="76x76" href="/admin/img/apple-icon.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/admin/img/favicon.png">
+</head>
+
+<body>
+<!-- WRAPPER -->
+<div id="wrapper">
+  <div class="vertical-align-wrap">
+    <div class="vertical-align-middle">
+      <div class="auth-box ">
+        <div class="left">
+          <div class="content">
+            <div class="header">
+              <div class="logo text-center"><img src="/admin/img/logo-dark.png" alt="Klorofil Logo"></div>
+              <p class="lead">Login to your account</p>
+            </div>
+            <form class="form-auth-small" action="/admin/login" method="post" id="admin_login_form">
+              <% if (typeof flashStatus !== "undefined" && typeof flashMessage !== "undefined") { %>
+              <div class="alert alert-<%= flashStatus %> alert-dismissible fade in" id="top_alert" role="alert">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                  <span aria-hidden="true">×</span>
+                </button>
+                <i class="fa fa-info"></i> <%= flashMessage %>
+              </div>
+              <% } %>
+              <div class="form-group">
+                <label for="email" class="control-label sr-only">Email</label>
+                <input name="email" type="text" class="form-control" id="email"
+                        <% if (typeof email !== "undefined") { %>
+                          value="<%= email %>"
+                        <% } %>
+                       placeholder="Email">
+              </div>
+              <div class="form-group">
+                <label for="password" class="control-label sr-only">Mật khẩu</label>
+                <input name="password" type="password" class="form-control" id="password" value="" placeholder="Mật khẩu">
+              </div>
+              <div class="alert alert-danger fade in error-alert" role="alert" id="login_error">
+                <strong id="error_message"></strong>
+              </div>
+              <div class="form-group clearfix">
+                <label class="fancy-checkbox element-left">
+                  <input name="remember" type="checkbox">
+                  <span>Ghi nhớ</span>
+                </label>
+              </div>
+              <button type="submit" class="btn btn-primary btn-lg btn-block">Đăng nhập</button>
+              <div class="bottom">
+                <span class="helper-text"><i class="fa fa-lock"></i> <a href="/quen-mat-khau">Quên mật khẩu?</a></span>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="right">
+          <div class="overlay"></div>
+          <div class="content text">
+            <h1 class="heading">Quản lý hệ thống một cách đơn giản nhất!</h1>
+            <p>Admin Dashboard V1.0</p>
+          </div>
+        </div>
+        <div class="clearfix"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- END WRAPPER -->
+</body>
+
+<script src="/admin/vendor/jquery/jquery.min.js"></script>
+<script src="/admin/vendor/bootstrap/js/bootstrap.min.js"></script>
+<script>
+  const emailRegEx = new RegExp('^(([^<>()\\[\\]\\\\.,;:\\s@"]+(\\.[^<>()\\[\\]\\\\.,;:\\s@"]+)*)|(".+"))@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,}))$')
+
+  $('#admin_login_form').submit(function(e) {
+    hideError();
+    let email = $('#email');
+    let password = $('#password');
+    let alert = $('#login_error');
+    let error_message = $('#error_message');
+    let error = true;
+
+    if (email.val() < 5 || email.val() > 100) {
+      email.addClass('invalid');
+      error_message.html('Email phải dài từ 5 tới 100 ký tự!');
+      alert.show(200);
+    } else if (!emailRegEx.test(email.val())) {
+      email.addClass('invalid');
+      error_message.html('Email chưa đúng định dạng!')
+      alert.show(200);
+    } else if (password.val().length < 5 || password.val().length > 100) {
+      email.removeClass('invalid');
+      password.addClass('invalid');
+      error_message.html('Mật khẩu phải dài từ 5 tới 100 ký tự!')
+      alert.show(200);
+    } else {
+      error = false;
+      hideError();
+    }
+
+    if (error) {
+      e.preventDefault();
+    }
+  })
+
+  $('#email').keypress(function() {
+    hideError();
+  })
+
+  $('#password').keypress(function() {
+    hideError();
+  })
+
+  function hideError() {
+    $('#email').removeClass('invalid');
+    $('#password').removeClass('invalid');
+    $('#top_alert').hide(100);
+    $('#login_error').hide(100);
+  }
+</script>
+
+</html>

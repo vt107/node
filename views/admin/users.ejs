@@ -64,16 +64,19 @@
                   <tbody>
                   <% if (typeof users !== "undefined") { %>
                   <% users.forEach(user => { %>
-                  <tr>
+                  <tr id="tr_<%= user['id'] %>">
                     <td><%= user['email'] %></td>
                     <td><%= user['name'] %></td>
                     <td><%= user['phone'] %></td>
                     <td><%= formatDay(user['created_at'], true) %></td>
                     <td class="user-action">
-                      <a href="/admin/thanh-vien/<%= user['id'] %>" class="btn btn-sm btn-info mb-1" data-toggle="tooltip" title="Xem">
+                      <a href="/admin/nguoi-dung/<%= user['id'] %>" class="btn btn-sm btn-info mb-1" data-toggle="tooltip" title="Xem">
                         <span class="fa fa-info-circle"></span>
                       </a>
-                      <button class="btn btn-sm btn-danger btn-delete mb-1" data-toggle="tooltip" title="Xóa" type="button" value="<%= user['id'] %>">
+                      <button class="btn btn-sm btn-primary mb-1" data-toggle="tooltip" title="Thăng quan" type="button" onclick="upgradeUser(<%= user['id'] %>)">
+                        <span class="fa fa-level-up"></span>
+                      </button>
+                      <button class="btn btn-sm btn-danger mb-1" data-toggle="tooltip" title="Xóa" type="button" onclick="deleteUser(<%= user['id'] %>)">
                         <span class="fa fa-trash"></span>
                       </button>
                     </td>
@@ -110,6 +113,7 @@
 <script src="/admin/vendor/datatables/js/dataTables.bootstrap.min.js"></script>
 <script src="/admin/vendor/bootstrap-select/bootstrap-select.min.js"></script>
 
+<script src="/admin/js/bootstrap-notify.js"></script>
 <script src="/admin/js/admin-common.js"></script>
 
 <script>
@@ -123,12 +127,53 @@
         }
       ]
     });
-
-    $('.user-action .btn-delete').click(function(e) {
-      let userId = $(e.target).val();
-      // delete user
-    });
   });
+
+  function deleteUser(id) {
+    if (confirm("Bạn sắp xóa một người dùng?")) {
+      $.ajax({
+        url: "/admin/nguoi-dung",
+        method: 'delete',
+        data: {
+          user_id: id
+        },
+        success: function(result) {
+          if (result && result.status === 'success') {
+            showAlert('success', result.message ? result.message : 'Xóa thành công!');
+            $(`#tr_${id}`).hide(500);
+          } else {
+            showAlert('danger', result.message ? result.message : 'Xóa thất bại!');
+          }
+        },
+        failed: function(error) {
+          showAlert('danger', error);
+        }
+      });
+    }
+  }
+
+  function upgradeUser(id) {
+    if (confirm("Bạn có chắc chắn muốn thao tác?")) {
+      $.ajax({
+        url: "/admin/nguoi-dung",
+        method: 'put',
+        data: {
+          user_id: id
+        },
+        success: function(result) {
+          if (result && result.status === 'success') {
+            showAlert('success', result.message ? result.message : 'Thao tác thành công!');
+            $(`#tr_${id}`).hide(500);
+          } else {
+            showAlert('danger', result.message ? result.message : 'Thao tác thất bại!');
+          }
+        },
+        failed: function(error) {
+          showAlert('danger', error);
+        }
+      });
+    }
+  }
 </script>
 </body>
 
