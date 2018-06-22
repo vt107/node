@@ -46,12 +46,12 @@ $(document).ready(function() {
 		
     // Set nav-bar active
     let urlArray = [
-      '/admin/tong-quan',
+      '/admin/general',
       'admin/cau-hinh',
-      '/admin/nguoi-dung',
-      '/admin/quan-tri-vien',
-      '/admin/danh-muc',
-      '/admin/san-pham',
+      '/admin/users',
+      '/admin/managers',
+      '/admin/categories',
+      '/admin/product',
       '/admin/don-hang',
     ];
     let navLink = $('#sidebar-nav nav > .nav > li');

@@ -70,7 +70,7 @@
                     <td><%= user['phone'] %></td>
                     <td><%= formatDay(user['created_at'], true) %></td>
                     <td class="user-action">
-                      <a href="/admin/nguoi-dung/<%= user['id'] %>" class="btn btn-sm btn-info mb-1" data-toggle="tooltip" title="Xem">
+                      <a href="/admin/users/<%= user['id'] %>" class="btn btn-sm btn-info mb-1" data-toggle="tooltip" title="Xem">
                         <span class="fa fa-info-circle"></span>
                       </a>
                       <button class="btn btn-sm btn-primary mb-1" data-toggle="tooltip" title="Thăng quan" type="button" onclick="upgradeUser(<%= user['id'] %>)">
@@ -132,7 +132,7 @@
   function deleteUser(id) {
     if (confirm("Bạn sắp xóa một người dùng?")) {
       $.ajax({
-        url: "/admin/nguoi-dung",
+        url: "/admin/users",
         method: 'delete',
         data: {
           user_id: id
@@ -155,7 +155,7 @@
   function upgradeUser(id) {
     if (confirm("Bạn có chắc chắn muốn thao tác?")) {
       $.ajax({
-        url: "/admin/nguoi-dung",
+        url: "/admin/users",
         method: 'put',
         data: {
           user_id: id

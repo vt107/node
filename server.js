@@ -22,6 +22,7 @@ const appConfig = {
   mail_user: 'tktthack@gmail.com',
   mail_pass: '01686601430',
   image_path: './public/uploads/images/',
+  reset_password_token_length: 6,
 
   mysql_connection: {
     host: 'localhost',
@@ -197,13 +198,7 @@ confirmRegisterEmail = (req, res) => {
 };
 
 showForgotPasswordForm = (req, res) => {
-  let data = {};
-  if (req.flashStatus && req.flashMessage) {
-    data.flashStatus = req.flashStatus;
-    data.flashMessage = req.flashMessage;
-  }
-
-  res.render('password/forgot_password', data);
+  res.render('forgot_password');
 };
 
 createPasswordRecoverEmail = (req, res) => {
@@ -212,16 +207,12 @@ createPasswordRecoverEmail = (req, res) => {
     mySql.query("SELECT * FROM users WHERE email = ? AND confirmed = ?", [email, 1], (err, result) => {
       if (err) throw err;
       if (result.length === 0) {
-        let data = {
-          email: email,
-          flashStatus: 'danger',
-          flashMessage: ''
-        };
-
-        res.render('password/forgot_password', data);
+        return res.json({
+          status: 'failed',
+          message: 'not found'
+        });
       } else {
-        // Create a email
-        let token = nanoid(5);
+        let token = nanoid(appConfig.reset_password_token_length);
         let tokenExpired = new Date();
         tokenExpired.setMinutes(tokenExpired.getMinutes() + appConfig.tokenTime);
         mySql.query("UPDATE users SET token=?, token_expired_at=? WHERE email=?", [token, tokenExpired, email], (error) => {
@@ -231,31 +222,78 @@ createPasswordRecoverEmail = (req, res) => {
           sendMail('Admin', email, 'Khoi phuc lai mat khau', mailBody, (error) => {
             if (error) throw error;
 
-            let data = {
-              email: email,
-              flashStatus: 'success',
-              flashMessage: ''
-            };
-
-            res.render('password/reset_password_token', data);
+            return res.json({
+              status: 'success',
+              message: 'Đã gửi Email khôi phục mật khẩu!'
+            })
           });
         })
       }
     })
   } else {
-    let data = {
-      email: email,
-      flashStatus: 'danger',
-      flashMessage: ''
-    };
+    res.json({
+      status: 'failed',
+      message: 'Email không hợp lệ!'
+    })
+  }
+};
 
-    res.render('password/forgot_password', data);
+confirmEmailResetPassword = (req, res) => {
+  let email = req.body.email;
+  let token = req.body.token;
+  let password = req.body.password;
+
+  if (!email || !validator.lengthValid(email, 5, 100) || !validator.isEmail(email)) {
+    return res.json({
+      status: 'failed',
+      error_field: 'email'
+    });
+  } else if (token || token.length !== appConfig.reset_password_token_length) {
+    return res.json({
+      status: 'failed',
+      error_field: 'token'
+    });
+  } else if (password || !validator.lengthValid(password, 5, 100)) {
+    return res.json({
+      status: 'failed',
+      error_field: 'password'
+    });
+  } else {
+    mySql.query("SELECT * FROM users WHERE email = ? AND confirmed = ?", [email, 1], (err, result) => {
+      if (err) throw err;
+      if (result.length === 0) {
+        return res.json({
+          status: 'failed',
+          message: 'not found'
+        });
+      } else {
+        if (new Date() < Date.parse(result[0]['token_expired_at'])) {
+          return res.json({
+            status: 'failed',
+            message: 'token expired'
+          })
+        } else {
+          bcrypt.genSalt(10, function(err, salt) {
+            bcrypt.hash(password, salt, function(err, hash) {
+              if (err) throw err;
+              mySql.query("UPDATE users set password = ? WHERE email = ?", [hash, email], (err) => {
+                if (err) throw err;
+                res.json({
+                  status: 'success',
+                  message: 'changed successfully'
+                })
+              })
+            });
+          });
+        }
+      }
+    })
   }
 };
 
 userLogout = (req, res) => {
   req.session.destroy();
-  res.render('login');
+  res.redirect('/');
 };
 
 showItem = (req, res) => {
@@ -331,7 +369,7 @@ adminLoginAttempt = (req, res) => {
 };
 
 redirectToGeneral = (req, res) => {
-  res.redirect('/admin/tong-quan');
+  res.redirect('/admin/general');
 };
 
 adminShowGeneral = (req, res) => {
@@ -612,9 +650,11 @@ app.get('/confirm-email', confirmRegisterEmail);
 app.post('/register', userRegister);
 app.get('/logout', userLogout);
 
-app.get('/san-pham/:itemId', showItem);
+app.get('/product//:itemId', showItem);
 
-app.get('/quen-mat-khau', show)
+app.get('/forget_password', showForgotPasswordForm);
+app.post('/forget_password', createPasswordRecoverEmail);
+app.post('/reset_password_token', confirmEmailResetPassword);
 
 // Admin
 app.get('/admin', redirectToGeneral);
@@ -622,28 +662,28 @@ app.get('/admin', redirectToGeneral);
 app.get('/admin/login', adminShowLogin);
 app.post('/admin/login', adminLoginAttempt);
 
-app.get('/admin/tong-quan', adminShowGeneral);
+app.get('/admin/general', adminShowGeneral);
 
-app.get('/admin/cau-hinh', adminShowConfigs);
-app.post('/admin/cau-hinh', adminUpdateConfigs);
+app.get('/admin/configs', adminShowConfigs);
+app.post('/admin/configs', adminUpdateConfigs);
 
-app.get('/admin/san-pham', adminShowItems);
-app.post('/admin/san-pham', adminCreateItem);
-app.put('/admin/san-pham', adminUpdateItem);
-app.delete('/admin/san-pham', adminDeleteItem);
+app.get('/admin/product', adminShowItems);
+app.post('/admin/product', adminCreateItem);
+app.put('/admin/product', adminUpdateItem);
+app.delete('/admin/product', adminDeleteItem);
 
-app.get('/admin/danh-muc', adminShowCategories);
-app.put('/admin/danh-muc', adminUpdateCategory);
-app.delete('/admin/danh-muc', adminDeleteCategory);
+app.get('/admin/categories', adminShowCategories);
+app.put('/admin/categories', adminUpdateCategory);
+app.delete('/admin/categories', adminDeleteCategory);
 
 
-app.get('/admin/nguoi-dung', adminShowUsers);
-app.put('/admin/nguoi-dung', adminUpgradeUser);
-app.delete('/admin/nguoi-dung', adminDeleteUser);
+app.get('/admin/users', adminShowUsers);
+app.put('/admin/users', adminUpgradeUser);
+app.delete('/admin/users', adminDeleteUser);
 
-app.get('/admin/quan-tri-vien', adminShowManagers);
-app.put('/admin/quan-tri-vien', adminDowngradeManager);
-app.delete('/admin/quan-tri-vien', adminDeleteManager);
+app.get('/admin/managers', adminShowManagers);
+app.put('/admin/managers', adminDowngradeManager);
+app.delete('/admin/managers', adminDeleteManager);
 
 
 /*

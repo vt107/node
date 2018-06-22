@@ -73,7 +73,7 @@
                     <td><%= role %></td>
                     <td><%= formatDay(admin['created_at'], true) %></td>
                     <td class="user-action">
-                      <a href="/admin/quan-tri-vien/<%= admin['id'] %>" class="btn btn-sm btn-info mb-1" data-toggle="tooltip" title="Xem">
+                      <a href="/admin/managers/<%= admin['id'] %>" class="btn btn-sm btn-info mb-1" data-toggle="tooltip" title="Xem">
                         <span class="fa fa-info-circle"></span>
                       </a>
                       <button class="btn btn-sm btn-primary mb-1" data-toggle="tooltip" title="Giáng chức" type="button" onclick="downgradeAdmin(<%= admin['id'] %>)">
@@ -134,7 +134,7 @@
   function deleteAdmin(id) {
     if (confirm(message.confirm_delete)) {
       $.ajax({
-        url: "/admin/quan-tri-vien",
+        url: "/admin/managers",
         method: 'delete',
         data: {
           admin_id: id
@@ -157,7 +157,7 @@
   function downgradeAdmin(id) {
     if (confirm(message.confirm_action)) {
       $.ajax({
-        url: "/admin/quan-tri-vien",
+        url: "/admin/managers",
         method: 'put',
         data: {
           admin_id: id

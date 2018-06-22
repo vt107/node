@@ -2,9 +2,10 @@
 /*************************
 *******Typography******
 **************************/
-@import url(http://fonts.googleapis.com/css?family=Roboto:400,300,400italic,500,700,100);
-@import url(http://fonts.googleapis.com/css?family=Open+Sans:400,800,300,600,700);
-@import url(http://fonts.googleapis.com/css?family=Abel);
+@import url(https://fonts.googleapis.com/css?family=Roboto);
+@import url(https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700);
+@import url(https://fonts.googleapis.com/css?family=Open+Sans:400,800,300,600,700);
+@import url(https://fonts.googleapis.com/css?family=Abel);
 
 body {
   font-family: 'Roboto', sans-serif;
@@ -39,7 +40,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .btn:hover,
 .btn:focus{
-  color: #fff;
+  /*color: #fff;*/
   outline: none;
   box-shadow: none;
 }
@@ -2463,4 +2464,12 @@ h2.title {
 
 .invalid {
   border-color: red;
+}
+
+.error-alert {
+  display: none;
+}
+
+.temporary-hidden {
+  display: none;
 }

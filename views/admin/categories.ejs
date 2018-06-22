@@ -101,7 +101,7 @@
                       Thêm danh mục mới
                     </button>
                     <div class="collapse mt-4" id="createParentCategory">
-                      <form method="post" action="/admin/danh-muc">
+                      <form method="post" action="/admin/categories">
                         <div class="panel panel-body">
                           <div class="row">
                             <div class="col-8 col-md-8">
@@ -195,7 +195,7 @@
                       Thêm danh mục mới
                     </button>
                     <div class="collapse mt-4" id="createSubCategory">
-                      <form method="post" action="/admin/danh-muc">
+                      <form method="post" action="/admin/categories">
                         <div class="panel panel-body">
                           <div class="row">
                             <div class="col-8 col-md-4">
@@ -256,7 +256,7 @@
     let newCategoryName = $(`#category_${id}`).val();
     let parentId = isParent ? 0 : $(`#parent_id_${id}`).val();
     $.ajax({
-      url: "/admin/danh-muc",
+      url: "/admin/categories",
       method: 'PUT',
       data: {
         category_id: id,
@@ -279,7 +279,7 @@
   function deleteCategory(id) {
     if (confirm(message.confirm_delete)) {
       $.ajax({
-        url: "/admin/danh-muc",
+        url: "/admin/categories",
         method: 'delete',
         data: {
           category_id: id
